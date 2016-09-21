@@ -70,10 +70,10 @@ public class GlobalSearch {
 			selectedMaxResults = defaultMaxResults;
 		}
 		if (ValidationUtils.isValid(searchValue)) {
-			G_Constraint searchtype = G_Constraint.COMPARE_CONTAINS;
+			G_Constraint searchtype = G_Constraint.CONTAINS;
 
 			if (searchValue.startsWith("\"") && searchValue.endsWith("\"")) {
-				searchtype = G_Constraint.REQUIRED_EQUALS;
+				searchtype = G_Constraint.EQUALS;
 			}
 			final Link link = searchPage.set(dao.getDefaultSchema(), selectedType, searchtype.name(), searchValue,
 					selectedMaxResults);
@@ -82,8 +82,8 @@ public class GlobalSearch {
 			alertManager.alert(Duration.TRANSIENT, Severity.ERROR, "Please enter a valid search value.");
 		}
 		if (!ValidationUtils.isValid(retval)) {
-//			alertManager.alert(Duration.TRANSIENT, Severity.WARN,
-//					"There is no search broker configured for this instance of Graphene");
+			// alertManager.alert(Duration.TRANSIENT, Severity.WARN,
+			// "There is no search broker configured for this instance of Graphene");
 		}
 		return retval;
 	}
