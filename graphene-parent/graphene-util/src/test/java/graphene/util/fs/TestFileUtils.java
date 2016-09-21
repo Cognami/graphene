@@ -32,17 +32,8 @@ public class TestFileUtils {
 		AssertJUnit.assertEquals("TOMCAT_HOME", m.group(2));
 	}
 
-	@Test
-	public void convertWithSpaces() {
-		String s = FileUtils.convertSystemProperties("%CUDA_HOME%/test/testdb");
-		System.out.println(s);
-	}
 
-	@Test
-	public void convertInline() {
-		String s = FileUtils
-				.convertSystemProperties("jdbc:databasetype:file:%CATALINA_HOME%/test/testdb");
-		System.out.println(s);
-	}
+
+
 
 }
