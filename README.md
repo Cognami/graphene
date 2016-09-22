@@ -23,14 +23,21 @@ Using Graphene
  
 Building Graphene 
 ------ 
- Graphene is built using [Apache Maven](http://maven.apache.org) version 3.0.4 or later and a recent version of [currenly Java 7](http://www.oracle.com/technetwork/java/javase/downloads/index.html). 
+ Graphene is built using [Apache Maven](http://maven.apache.org) version 3.0.4 or later and a recent version of [currently Java 7](http://www.oracle.com/technetwork/java/javase/downloads/index.html). 
+ Note that Java 7 must be used, and 8 will cause issues.  On a Mac, you might have to go through some extra steps to enable multiple Java versions.  Google 'jenv'.  Also you'll need to update your JAVA_HOME that maven will use during a terminal session:
+ Install a Java 7 SDK dmg file, then:
+ export JAVA_HOME=/Library/Java/JavaVirtualMachines/{your-jdk-1.7.-version}/Contents/Home
+ [See here for details](http://stackoverflow.com/questions/18813828/why-maven-use-jdk-1-6-but-my-java-version-is-1-7)
+ 
+ 
+ *Clone and ```mvn clean install``` the Vande project, which a small but required module outside of Graphene parent.  
  
  * A plain 'mvn clean install' on graphene-parent will build all the jar files and a single war file (to be overlaid on your project)
  * Test execution is part of the build, but you can add -DskipTests=true to cut down on the build time.
  * A BuildAll.bat is supplied for windows users.  This will perform a few cleans to overcome some windows issues, and then compile and install to your local maven repo.
  * BuildAllOffline.bat will also grab the source code and javadocs for the dependencies, so you can take your .m2 directory into an offline enclave (or airgapped network) to develop.
  
-Quickstart (4.2.0-SNAPSHOT and later)
+Quickstart (4.2.0 and later)
 ------
  Once you've built the core modules (from graphene parent) you should be able to create a new project via a maven archetype.  If you've never used an archetype, basically it sets up the scaffolding for your new project based on a small amount of user input.  From there you can import it into your favorite IDE and modify it to your requirements.  In our case, we provide an archetype that is based on [Graphene-Instagram](https://github.com/Sotera/graphene-instagram).  This may mean you'll have to delete some of the classes we give you, but you'll have a better idea on how the project is intended to be structured.
 
