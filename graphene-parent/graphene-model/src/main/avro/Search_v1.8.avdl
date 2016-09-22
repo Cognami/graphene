@@ -46,6 +46,7 @@ protocol G_Search {
 
 	 */
 	enum G_Constraint {
+		LIKE,
 		EQUALS, 		// used for cases of REQUIRED or EQUALS
 		NOT 		,			// used for MUST NOT match, or logical NOT
 		OPTIONAL_EQUALS,		// equals OR
