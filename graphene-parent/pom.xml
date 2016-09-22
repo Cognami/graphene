@@ -38,7 +38,7 @@
 
 		<!-- properties for dependencies for web frameworks -->
 
-		<tapestry-release-version>5.3.7</tapestry-release-version>
+		<tapestry-release-version>5.3.8</tapestry-release-version>
 		<tynamo-version>0.5.0</tynamo-version>
 
 		<!-- properties for dependencies involving databases -->
@@ -627,8 +627,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>${maven.compiler.plugin.version}</version>
 					<configuration>
-						<source>1.7</source>
-						<target>1.7</target>
+						<source>1.8</source>
+						<target>1.8</target>
 						<encoding>UTF-8</encoding>
 						<optimize>true</optimize>
 						<showDeprecation>true</showDeprecation>
@@ -721,7 +721,7 @@
 										<version>3.0.4</version>
 									</requireMavenVersion>
 									<requireJavaVersion>
-										<version>1.7</version>
+										<version>1.8</version>
 									</requireJavaVersion>
 								</rules>
 							</configuration>

@@ -28,6 +28,7 @@ import graphene.util.StringUtils;
 import graphene.util.validator.ValidationUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -82,22 +83,14 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 	private DocumentBuilder db;
 
 	public HyperGraphBuilder${projectName}Impl() {
-
-		// constant legend items regardless of what other node types are present
-		// in graph
-		// XXX: fix this, pull the highlight color and selected color from the
-		// styleservice (inject it)
-		legendItems.add(new V_LegendItem("${symbol_pound}a90329", "Item you searched for."));
-		legendItems.add(new V_LegendItem("darkblue", "Selected item(s)."));
-
 		setupTrimmingOptions();
 		setupNodeInheritance();
 	}
 
 	@Override
 	public V_GenericEdge createEdge(final V_GenericNode a, final String relationType, final String relationValue,
-			final V_GenericNode attachTo, final double localPriority, final double inheritedScore,
-			final double nodeCertainty, final double minimumScoreRequired) {
+			final V_GenericNode attachTo, final double nodeCertainty, final double minimumScoreRequired,
+			final Map<String, V_GenericEdge> edgeList) {
 		V_GenericEdge edge = null;
 		if (ValidationUtils.isValid(attachTo)) {
 			final String key = generateEdgeId(attachTo.getId(), relationType, a.getId());
@@ -109,7 +102,6 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 				if (nodeCertainty < 100.0) {
 					edge.addData("Certainty", DataFormatConstants.formatPercent(nodeCertainty));
 					edge.setLineStyle("dotted");
-					// edge.setColor("${symbol_pound}787878");
 				}
 				// if this is a LIKE edge
 				if (relationType.equals(G_CanonicalRelationshipType.LIKES.name())) {
@@ -124,13 +116,9 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 					edge.setColor("green");
 					edge.setCount(3);
 				}
-				edge.addData("Local_Priority", "" + localPriority);
-				edge.addData("Min_Score_Required", "" + minimumScoreRequired);
-				edge.addData("Parent_Score", "" + inheritedScore);
 				edge.addData("Value", StringUtils.coalesc(" ", a.getLabel(), relationValue, attachTo.getLabel()));
 				edgeList.put(key, edge);
 			}
-
 			// if this flag is set, we'll add the attributes to the
 			// attached node.
 			if (inheritAttributes) {
@@ -170,21 +158,21 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 
 	@Override
 	public boolean execute(final G_SearchResult t, final G_EntityQuery q) {
-		if (ValidationUtils.isValid(t.getResult())) {
-			final G_Entity entity = (G_Entity) t.getResult();
-			final String type = (String) PropertyHelper.getSingletonValue(entity.getProperties().get(
-					G_Parser.REPORT_TYPE));
-
-			final G_Parser parser = db.getParserForObject(type);
-			if (parser != null) {
-				return parser.parse(t, q);
-			} else {
-				logger.warn("No parser was found for the supplied type, but carrying on.");
-				return true;
-			}
-		} else {
+//		if (ValidationUtils.isValid(t.getResult())) {
+//			final G_Entity entity = (G_Entity) t.getResult();
+//			final String type = (String) PropertyHelper.getSingletonValue(entity.getProperties().get(
+//					G_Parser.REPORT_TYPE));
+//
+//			final G_Parser parser = db.getParserForObject(type);
+//			if (parser != null) {
+//				return parser.parse(t, q);
+//			} else {
+//				logger.warn("No parser was found for the supplied type, but carrying on.");
+//				return true;
+//			}
+//		} else {
 			return false;
-		}
+	//	}
 	}
 
 	@Override
@@ -281,15 +269,13 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 	}
 
 	@Override
-	public void performPostProcess(final V_GraphQuery graphQuery) {
-		logger.debug("Before post process, node list is size " + nodeList.size());
-		logger.debug("Before post process, edge list is size " + edgeList.size());
-
+	public V_GenericGraph performPostProcess(final V_GraphQuery graphQuery, final V_GenericGraph vg) {
+		logger.debug("Before post process, node list is size " + vg.getNodes().size());
+		logger.debug("Before post process, edge list is size " + vg.getEdges().size());
 		V_GenericNode startNode = null;
-
 		// mandatory now. you'll see why down below
 		// if (MARK_START_NODE) {
-		for (final V_GenericNode n : nodeList.values()) {
+		for (final V_GenericNode n : vg.getNodes().values()) {
 			for (final String queryId : graphQuery.getSearchIds()) {
 				final String a = n.getLabel().toLowerCase().trim();
 				final String c = n.getDataValue("text");
@@ -322,7 +308,7 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 			 * First we iterate over all the edges. Each time we see a node as
 			 * either a source or target, we increment it's count.
 			 */
-			for (final V_GenericEdge e : edgeList.values()) {
+			for (final V_GenericEdge e : vg.getEdges().values()) {
 				final String s = e.getSourceId();
 				final String t = e.getTargetId();
 				final Integer sCount = countMap.get(s);
@@ -339,64 +325,78 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 				}
 			}
 
-			for (final V_GenericEdge e : edgeList.values()) {
+			/**
+			 * Next we loop over the edges again and look at the counts for each
+			 * side.
+			 * 
+			 * If the count is one and we don't want to keep the node type,
+			 * we'll skip adding it to the new list.
+			 * 
+			 */
+			for (final V_GenericEdge e : vg.getEdges().values()) {
 				boolean keepEdge = true;
 				boolean keepTarget = true;
 				boolean keepSource = true;
-				final String s = e.getSourceId();
-				final String t = e.getTargetId();
-				if (countMap.get(s) == 1) {
-					final V_GenericNode n = nodeList.get(s);
-					if (n != null) {
+				final String sourceId = e.getSourceId();
+				final String targetId = e.getTargetId();
+				final V_GenericNode sourceNode = vg.getNodes().get(sourceId);
+				final V_GenericNode targetNode = vg.getNodes().get(targetId);
+				if (countMap.get(sourceId) == 1) {
+
+					if (sourceNode != null) {
 						// If the type is not something we always have to keep,
 						// then mark the node and this edge to be pruned.
-						if (!listOfTypesToAlwaysKeep.contains(n.getIdType())) {
+						if (!listOfTypesToAlwaysKeep.contains(sourceNode.getIdType())) {
+							// aka ok to prune
 							keepSource = false;
 							keepEdge = false;
+							targetNode.inheritPropertiesOfExcept(sourceNode, skipInheritanceTypes);
 						}
 					} else {
-						logger.error("Node for source id " + s + " was null");
+						logger.error("Node for source id " + sourceId + " was null");
 					}
 				}
-				if (countMap.get(t) == 1) {
-					final V_GenericNode n = nodeList.get(t);
+				if (countMap.get(targetId) == 1) {
+					final V_GenericNode n = vg.getNodes().get(targetId);
 					if (n != null) {
 						if (!listOfTypesToAlwaysKeep.contains(n.getIdType())) {
 							keepTarget = false;
 							keepEdge = false;
+							sourceNode.inheritPropertiesOfExcept(targetNode, skipInheritanceTypes);
+
 						}
 					} else {
-						logger.error("Node for target id " + t + " was null");
+						logger.error("Node for target id " + targetId + " was null");
 					}
 				}
 				if (keepEdge == true) {
-					// if
-					// (e.getIdVal().equals(G_CanonicalRelationshipType.CONTAINED_IN.name()))
-					// {
-					// e.setLineStyle("dotted");
-					// e.setWeight(50);
-					// }
-					// newEdgeList.addEdge(e);
-					if (!e.getIdVal().equals(G_CanonicalRelationshipType.CONTAINED_IN.name())) {
-						newEdgeList.put(e.getId(), e);
+					if (e.getIdVal().equals(G_CanonicalRelationshipType.CONTAINED_IN.name())) {
+						e.setLineStyle("dotted");
+						e.setWeight(50);
 					}
+					newEdgeList.put(e.getId(), e);
 				}
 				if (keepSource == true) {
-					newNodeList.put(s, nodeList.get(s));
+					newNodeList.put(sourceId, vg.getNodes().get(sourceId));
 				}
 				if (keepTarget == true) {
-					newNodeList.put(t, nodeList.get(t));
+					newNodeList.put(targetId, vg.getNodes().get(targetId));
 				}
 			}
 
 			// TODO: remove legend items for node types that are no longer
 			// present in graph
-
-			nodeList = newNodeList;
-			edgeList = newEdgeList;
-			logger.debug("New node list is size " + nodeList.size());
-			logger.debug("New edge list is size " + edgeList.size());
+			final Collection<V_LegendItem> tempLegend = new ArrayList<V_LegendItem>();
+			tempLegend.add(new V_LegendItem("#a90329", "Item you searched for."));
+			tempLegend.add(new V_LegendItem("darkblue", "Selected item(s)."));
+			tempLegend.addAll(vg.getLegend());
+			vg.setLegend(tempLegend);
+			vg.setNodes(newNodeList);
+			vg.setEdges(newEdgeList);
+			logger.debug("New node list is size " + vg.getNodes().size());
+			logger.debug("New edge list is size " + vg.getEdges().size());
 		}
+		return vg;
 
 	}
 
