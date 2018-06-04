@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>graphene-parent</artifactId>
 		<groupId>graphene</groupId>
-		<version>4.2.0</version>
+		<version>4.3.0</version>
 	</parent>
 	<artifactId>graphene-model</artifactId>
 	<name>${project.artifactId}</name>
@@ -18,13 +18,13 @@
 			<artifactId>graphene-util</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>graphene</groupId>
+			<artifactId>graphene-vande</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>2.3.1</version>
-		</dependency>
-		<dependency>
-			<groupId>vande</groupId>
-			<artifactId>vande</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

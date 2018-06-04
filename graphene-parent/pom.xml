@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>graphene</groupId>
 	<artifactId>graphene-parent</artifactId>
-	<version>4.2.0</version>
+	<version>4.3.0</version>
 	<packaging>pom</packaging>
 	<prerequisites>
 		<maven>3.0.4</maven>
@@ -28,8 +29,9 @@
 		<module>graphene-augment</module>
 		<module>graphene-workflow</module>
 		<module>graphene-extraction</module>
-    <module>graphene-security</module>
-  </modules>
+		<module>graphene-security</module>
+		<module>graphene-vande</module>
+	</modules>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -47,7 +49,7 @@
 		<querydsl.version>3.3.1</querydsl.version>
 
 		<!-- properties for dependencies that are utilities -->
-		<vande.version>4.2.0</vande.version>
+		<vande.version>4.3.0</vande.version>
 		<jackson2.version>2.2.1	</jackson2.version>
 		<!-- <jackson2.version>2.3.0</jackson2.version> 2.3.0 does not work with 
 			resteasy 3.0.5.Final or 3.0.6.Final. -->
@@ -66,7 +68,7 @@
 		<kryo.version>2.24.0</kryo.version>
 		<slf4j-log4j12.version>1.7.5</slf4j-log4j12.version>
 		<jxl.version>2.6.12</jxl.version>
-		
+
 		<!-- properties for testing dependencies -->
 		<jettyVersion>9.0.0</jettyVersion>
 		<servlet-api-release-version>2.5</servlet-api-release-version>
@@ -191,12 +193,12 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>vande</groupId>
-				<artifactId>vande</artifactId>
-				<version>${vande.version}</version>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>graphene-vande</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 
-			
+
 
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -690,7 +692,7 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>2.9</version>
 					<configuration>
-						<dependencySourceExcludes/>
+						<dependencySourceExcludes />
 						<failOnError>false</failOnError>
 					</configuration>
 				</plugin>

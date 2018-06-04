@@ -6,13 +6,13 @@
 	<parent>
 		<groupId>graphene</groupId>
 		<artifactId>graphene-parent</artifactId>
-		<version>4.2.0</version>
+		<version>4.3.0</version>
 	</parent>
 	<artifactId>graphene-dao-solr</artifactId>
 	<name>${project.artifactId}</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<solr.version>4.2.0</solr.version>
+		<solr.version>4.3.0</solr.version>
 	</properties>
 
 	<dependencies>
