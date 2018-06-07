@@ -5,6 +5,8 @@ import graphene.dao.G_Parser;
 import graphene.dao.HyperGraphBuilder;
 import graphene.dao.StopWordService;
 import graphene.dao.StyleService;
+import graphene.model.graph.CreateOrUpdateEdgeRequest;
+import graphene.model.graph.CreateOrUpdateNodeRequest;
 import graphene.model.idl.G_CallBack;
 import graphene.model.idl.G_CanonicalRelationshipType;
 import graphene.model.idl.G_Constraint;
@@ -78,8 +80,7 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 	@Inject
 	protected G_PropertyKeyTypeAccess propertyKeyTypeAccess;
 
-	// protected Map<String, V_GenericEdge> edgeList = new HashMap<String,
-	// V_GenericEdge>();
+	protected Map<String, V_GenericEdge> edgeList = new HashMap<String, V_GenericEdge>();
 
 	protected List<G_DocumentError> errors = new ArrayList<G_DocumentError>();
 
@@ -89,10 +90,9 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 
 	protected Stack<G_EntityQuery> queriesToRunNextDegree = new Stack<G_EntityQuery>();
 
-	// protected Map<String, V_GenericNode> nodeList = new HashMap<String,
-	// V_GenericNode>();
+	protected Map<String, V_GenericNode> nodeList = new HashMap<String, V_GenericNode>();
 
-	// protected Set<V_LegendItem> legendItems = new HashSet<V_LegendItem>();
+	protected Set<V_LegendItem> legendItems = new HashSet<V_LegendItem>();
 
 	@Inject
 	private Logger logger;
@@ -174,8 +174,8 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 						for (final G_SearchResult t : searchResults.getResults()) {
 							if (ValidationUtils.isValid(t.getResult())) {
 								final G_Entity entity = (G_Entity) t.getResult();
-								final String type = (String) PropertyHelper.getSingletonValue(entity.getProperties()
-										.get(G_Parser.REPORT_TYPE));
+								final String type = (String) PropertyHelper
+										.getSingletonValue(entity.getProperties().get(G_Parser.REPORT_TYPE));
 								// Find a parser for the document type
 								final G_Parser parser = db.getParserForObject(type);
 								if (parser != null) {
@@ -205,7 +205,7 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 					logger.debug("3333====After running " + eq.getId() + ", there are " + queriesToRunNextDegree.size()
 							+ " queries to run in the next degree.");
 				}
-			}// end while loop
+			} // end while loop
 
 			// very important!!
 			// unscannedNodeList.clear();
@@ -246,8 +246,8 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 	}
 
 	/**
-	 * Override this in your graph builder so you can control how queries are
-	 * made based on node types/properties.
+	 * Override this in your graph builder so you can control how queries are made
+	 * based on node types/properties.
 	 */
 	@Override
 	public void buildQueryForNextIteration(final V_GenericNode... nodes) {
@@ -280,10 +280,9 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 	}
 
 	/**
-	 * This is used for the initial query when starting a new graph or expand.
-	 * This method is here so you can override it and put in custom query
-	 * parameters to boost certain result types that were not part of the
-	 * V_GenericGraphQuery.
+	 * This is used for the initial query when starting a new graph or expand. This
+	 * method is here so you can override it and put in custom query parameters to
+	 * boost certain result types that were not part of the V_GenericGraphQuery.
 	 * 
 	 * @param graphQuery
 	 * @return
@@ -299,6 +298,7 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 
 	// TODO: We want to remove query path edges if we have other edges going to
 	// it.
+	//CreateOrUpdateEdgeRequest req
 	public boolean createEdge(final String fromId, final String relationType, final String toId,
 			final String relationValue, final V_GenericGraph vg) {
 		if (ValidationUtils.isValid(fromId, toId)) {
@@ -323,25 +323,23 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 
 	/**
 	 * Creates an edge between two nodes, and sets relationship information.
-	 * Override this if you want to style nodes or add attributes as you build
-	 * the edges.
+	 * Override this if you want to style nodes or add attributes as you build the
+	 * edges.
 	 * 
 	 * @return
 	 */
 	@Override
-	public V_GenericEdge createEdge(final V_GenericNode a, final String relationType, final String relationValue,
-			final V_GenericNode attachTo, final double nodeCertainty, final double minimumScoreRequired,
-			final Map<String, V_GenericEdge> edgeList) {
+	public V_GenericEdge createEdge(CreateOrUpdateEdgeRequest req) {
 		V_GenericEdge edge = null;
-		if (ValidationUtils.isValid(attachTo)) {
-			final String key = generateEdgeId(attachTo.getId(), relationType, a.getId());
+		if (ValidationUtils.isValid(req.getNodeA())) {
+			final String key = generateEdgeId(req.getNodeB().getId(), req.getRelationType(), req.getNodeA().getId());
 			if ((key != null) && !edgeList.containsKey(key)) {
-				edge = new V_GenericEdge(key, a, attachTo);
-				edge.setIdType(relationType);
+				edge = new V_GenericEdge(key, req.getNodeA(), req.getNodeB());
+				edge.setIdType(req.getRelationType());
 				edge.setLabel(null);
-				edge.setIdVal(relationType);
-				if (nodeCertainty < 100.0) {
-					edge.addData("Certainty", DataFormatConstants.formatPercent(nodeCertainty));
+				edge.setIdVal(req.getRelationType());
+				if (req.getNodeCertainty() < 100.0) {
+					edge.addData("Certainty", DataFormatConstants.formatPercent(req.getNodeCertainty()));
 					edge.setLineStyle("dotted");
 					// edge.setColor("#787878");
 				}
@@ -349,14 +347,15 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 				// edge.addData("Min_Score_Required", "" +
 				// minimumScoreRequired);
 				// edge.addData("Parent_Score", "" + inheritedScore);
-				edge.addData("Value", StringUtils.coalesc(" ", a.getLabel(), relationValue, attachTo.getLabel()));
+				edge.addData("Value", StringUtils.coalesc(" ", req.getNodeA().getLabel(), req.getRelationValue(),
+						req.getNodeB().getLabel()));
 				edgeList.put(key, edge);
 			}
 
 			// if this flag is set, we'll add the attributes to the
 			// attached node.
 			if (inheritAttributes) {
-				attachTo.inheritPropertiesOfExcept(a, skipInheritanceTypes);
+				req.getNodeB().inheritPropertiesOfExcept(req.getNodeA(), skipInheritanceTypes);
 			}
 		}
 		return edge;
@@ -446,52 +445,63 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 	// }
 
 	@Override
-	public V_GenericNode createOrUpdateNode(final double minimumScoreRequired, final String originalId,
-			final String idType, final String nodeType, final V_GenericNode attachTo, final String relationType,
-			final String relationValue, final double nodeCertainty, final V_GenericGraph subgraph) {
+	public V_GenericNode createOrUpdateNode(CreateOrUpdateNodeRequest req) {
+		// final double minimumScoreRequired, final String originalId,
+		// final String idType, final String nodeType, final V_GenericNode attachTo,
+		// final String relationType,
+		// final String relationValue, final double nodeCertainty, final V_GenericGraph
+		// subgraph)
 		V_GenericNode a = null;
 		Map<String, V_GenericNode> nodeList;
 		Map<String, V_GenericEdge> edgeList;
-		if (subgraph != null) {
-			nodeList = subgraph.getNodes();
-			edgeList = subgraph.getEdges();
+		if (req.getSubgraph() != null) {
+			nodeList = req.getSubgraph().getNodes();
+			edgeList = req.getSubgraph().getEdges();
 		} else {
 			logger.error("BAD Subgraph provided.");
 			return null;
 		}
-		if (ValidationUtils.isValid(originalId)) {
-			if (!stopwordService.isValid(originalId)) {
+		if (ValidationUtils.isValid(req.getOriginalId())) {
+			if (!stopwordService.isValid(req.getOriginalId())) {
 				logger.error("ID contained a stopword, not creating this node.");
-				addError(new G_DocumentError("Bad Identifier", "The " + nodeType + " (" + originalId
-						+ ") contains a stopword", Severity.WARN.toString()));
+				addError(new G_DocumentError("Bad Identifier",
+						"The " + req.getNodeType() + " (" + req.getOriginalId() + ") contains a stopword", Severity.WARN.toString()));
 			} else {
-				final String id = generateNodeId(originalId);
+				final String id = generateNodeId(req.getOriginalId());
 				a = nodeList.get(id);
 				// final double calculatedPriority = inheritedScore *
 				// localPriority;
 				if (a == null) {
 					a = new V_GenericNode(id);
-					a.setIdType(idType);
+					a.setIdType(req.getIdType());
 					// This is important because we use it to search on the next
 					// traversal.
-					a.setIdVal(originalId);
-					a.setNodeType(nodeType);
+					a.setIdVal(req.getOriginalId());
+					a.setNodeType(req.getNodeType());
 					a.setColor(style.getHexColorForNode(a.getNodeType()));
-					a.setMinScore(minimumScoreRequired);
+					a.setMinScore(req.getMinimumScoreRequired());
 					// a.setPriority(calculatedPriority);
 					// Remove leading zeros from the label
-					a.setLabel(StringUtils.removeLeadingZeros(originalId));
+					a.setLabel(StringUtils.removeLeadingZeros(req.getOriginalId()));
 					// XXX: need a way of getting the link to the page with TYPE
-					a.addData(nodeType, getCombinedSearchLink(nodeType, originalId));
+					a.addData(req.getNodeType(), getCombinedSearchLink(req.getNodeType(), req.getOriginalId()));
 					nodeList.put(id, a);
-					subgraph.addLegendItem(new V_LegendItem(a.getColor(), a.getNodeType()));
+					req.getSubgraph().addLegendItem(new V_LegendItem(a.getColor(), a.getNodeType()));
 				}
 				// now we have a valid node. Attach it to the other node
 				// provided.
-				createEdge(a, relationType, relationValue, attachTo, nodeCertainty, minimumScoreRequired, edgeList);
+				CreateOrUpdateEdgeRequest edgeReq= new CreateOrUpdateEdgeRequest();
+				edgeReq.setNodeA(a);
+				edgeReq.setRelationType(req.getRelationType());
+				edgeReq.setRelationValue(req.getRelationValue());
+				edgeReq.setNodeB(req.getAttachTo());
+				edgeReq.setNodeCertainty(req.getNodeCertainty());
+				edgeReq.setMinimumScoreRequired(req.getMinimumScoreRequired());
+				edgeReq.setEdgeList(edgeList);
+				createEdge(edgeReq);
 			}
 		} else {
-			logger.error("Invalid id for nodetype " + nodeType + " of idtype " + idType);
+			logger.error("Invalid id for nodetype " + req.getNodeType() + " of idtype " + req.getIdType());
 		}
 		return a;
 	}
@@ -625,8 +635,7 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * graphene.services.HyperGraphBuilder#makeGraphResponse(mil.darpa.vande
+	 * @see graphene.services.HyperGraphBuilder#makeGraphResponse(mil.darpa.vande
 	 * .generic.V_GraphQuery)
 	 */
 	@Override
@@ -727,8 +736,7 @@ public abstract class AbstractGraphBuilder implements G_CallBack, HyperGraphBuil
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * graphene.services.HyperGraphBuilder#performPostProcess(mil.darpa.vande
+	 * @see graphene.services.HyperGraphBuilder#performPostProcess(mil.darpa.vande
 	 * .generic.V_GraphQuery)
 	 */
 	@Deprecated

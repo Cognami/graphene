@@ -1,5 +1,7 @@
 package graphene.dao;
 
+import graphene.model.graph.CreateOrUpdateEdgeRequest;
+import graphene.model.graph.CreateOrUpdateNodeRequest;
 import graphene.model.idl.G_DataAccess;
 import graphene.model.idl.G_DocumentError;
 import graphene.model.idl.G_EntityQuery;
@@ -45,8 +47,7 @@ public interface HyperGraphBuilder {
 
 	public abstract void buildQueryForNextIteration(V_GenericNode... nodes);
 
-	V_GenericEdge createEdge(V_GenericNode a, String relationType, String relationValue, V_GenericNode attachTo,
-			double nodeCertainty, double minimumScoreRequired, Map<String, V_GenericEdge> edgeList);
+	V_GenericEdge createEdge(CreateOrUpdateEdgeRequest req);
 
 	/**
 	 * 
@@ -61,9 +62,7 @@ public interface HyperGraphBuilder {
 	 * @param subgraph
 	 * @return
 	 */
-	public abstract V_GenericNode createOrUpdateNode(final double minimumScoreRequired, final String originalId,
-			final String idType, final String nodeType, final V_GenericNode attachTo, final String relationType,
-			final String relationValue, final double nodeCertainty, final V_GenericGraph subgraph);
+	public abstract V_GenericNode createOrUpdateNode(CreateOrUpdateNodeRequest req);
 
 	/**
 	 * Create a node or update an existing one. Also, use the color based on the
