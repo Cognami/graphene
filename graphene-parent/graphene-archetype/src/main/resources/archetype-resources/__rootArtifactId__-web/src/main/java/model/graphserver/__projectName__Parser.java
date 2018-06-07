@@ -6,6 +6,7 @@ package ${package}.model.graphserver;
 import graphene.dao.HyperGraphBuilder;
 import graphene.dao.es.impl.BasicParserESImpl;
 import graphene.hts.entityextraction.Extractor;
+import graphene.model.graph.CreateOrUpdateNodeRequest;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_SymbolConstants;
 import graphene.util.StringUtils;
@@ -125,33 +126,12 @@ public abstract class ${projectName}Parser<T> extends BasicParserESImpl<T> {
 
 	public ${projectName}Parser() {
 		// extractors = new ArrayList<Extractor>();
-		// extractors.add(new EmailExtractor());
-		// extractors.add(new PhoneExtractor());
-		// extractors.add(new URLExtractor());
-		// extractors.add(new USSSNExtractor());
-		// extractors.add(new CreditCardExtractor());
-		// extractors.add(new MexicoRFCExtractor());
-		// extractors.add(new AccountExtractor());
-		//
+		// extractors.add(new MyCustomExtractor());
+		
 		// extractorMap = new HashMap<String, Extractor>();
-		// final EmailExtractor emailExtractor = new EmailExtractor();
-		// extractorMap.put(emailExtractor.getNodetype(), emailExtractor);
-		// final PhoneExtractor phoneExtractor = new PhoneExtractor();
-		// extractorMap.put(phoneExtractor.getNodetype(), phoneExtractor);
-		// final URLExtractor urlExtractor = new URLExtractor();
-		// extractorMap.put(urlExtractor.getNodetype(), urlExtractor);
-		// final USSSNExtractor usssnExtractor = new USSSNExtractor();
-		// extractorMap.put(usssnExtractor.getNodetype(), usssnExtractor);
-		// final CreditCardExtractor creditCardExtractor = new
-		// CreditCardExtractor();
-		// extractorMap.put(creditCardExtractor.getNodetype(),
-		// creditCardExtractor);
-		// final MexicoRFCExtractor mexicoRFCExtractor = new
-		// MexicoRFCExtractor();
-		// extractorMap.put(mexicoRFCExtractor.getNodetype(),
-		// mexicoRFCExtractor);
-		// final AccountExtractor accountExtractor = new AccountExtractor();
-		// extractorMap.put(accountExtractor.getNodetype(), accountExtractor);
+		// final MyCustomExtractor e1 = new MyCustomExtractor();
+		// extractorMap.put(e1.getNodetype(), e1);
+		
 
 	}
 
@@ -216,8 +196,17 @@ public abstract class ${projectName}Parser<T> extends BasicParserESImpl<T> {
 
 			final Collection<G_Entity> newEntities = extractor.extractEntities(id);
 
-			phgb.createOrUpdateNode(id, extractor.getIdType(), extractor.getNodetype(), attachTo,
-					extractor.getRelationType(), extractor.getRelationValue());
+			CreateOrUpdateNodeRequest r = new CreateOrUpdateNodeRequest();
+			r.setMinimumScoreRequired(HIGH_MINIMUM_CERTAINTY);
+			r.setNodeCertainty(1.0);
+			r.setOriginalId(id);
+			r.setIdType( extractor.getIdType());
+			r.setNodeType(extractor.getNodetype());
+			r.setAttachTo(attachTo);
+			r.setRelationType(extractor.getRelationType());
+			r.setRelationValue(extractor.getRelationValue());
+			
+			phgb.createOrUpdateNode(r);
 
 			// if (ValidationUtils.isValid(attachTo, newEntities)) {
 			// logger.debug("Extracted " + extractor.getNodetype() + ": " + id
@@ -233,9 +222,19 @@ public abstract class ${projectName}Parser<T> extends BasicParserESImpl<T> {
 	public void createExtractedNodes(final Collection<String> ids, final Extractor extractor,
 			final V_GenericNode attachTo) {
 		for (final String id : ids) {
-			final V_GenericNode extractedIdentifierNode = phgb.createOrUpdateNode(HIGH_MINIMUM_CERTAINTY, 1.0,
-					LOW_PRIORITY, id, extractor.getIdType(), extractor.getNodetype(), attachTo,
-					extractor.getRelationType(), extractor.getRelationValue(), 50.0);
+			
+			
+			CreateOrUpdateNodeRequest r = new CreateOrUpdateNodeRequest();
+			r.setMinimumScoreRequired(HIGH_MINIMUM_CERTAINTY);
+			r.setNodeCertainty(1.0);
+			r.setOriginalId(id);
+			r.setIdType( extractor.getIdType());
+			r.setNodeType(extractor.getNodetype());
+			r.setAttachTo(attachTo);
+			r.setRelationType(extractor.getRelationType());
+			r.setRelationValue(extractor.getRelationValue());
+			
+			final V_GenericNode extractedIdentifierNode = phgb.createOrUpdateNode(r);
 
 			if (ValidationUtils.isValid(attachTo, extractedIdentifierNode)) {
 
@@ -291,7 +290,7 @@ public abstract class ${projectName}Parser<T> extends BasicParserESImpl<T> {
 	 */
 	protected String getReportViewerLink(final String page, final String id) {
 		final String context = encoder.encode(id);
-		return "<a href=${symbol_escape}"reports/" + page + "/" + context + "${symbol_escape}" class=${symbol_escape}"btn btn-primary${symbol_escape}" target=${symbol_escape}"" + id + "${symbol_escape}" >"
+		return "<a href=\"reports/" + page + "/" + context + "\" class=\"btn btn-primary\" target=\"" + id + "\" >"
 				+ id + "</a>";
 	}
 
@@ -338,5 +337,6 @@ public abstract class ${projectName}Parser<T> extends BasicParserESImpl<T> {
 	public void setReportLinkTitle(final String reportLinkTitle) {
 		this.reportLinkTitle = reportLinkTitle;
 	}
+
 
 }

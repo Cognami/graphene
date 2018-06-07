@@ -4,6 +4,8 @@
 package ${package}.model.graphserver;
 
 import graphene.dao.G_Parser;
+
+import graphene.model.graph.CreateOrUpdateNodeRequest;
 import ${package}.model.media.CommentData;
 import ${package}.model.media.LikeData;
 import ${package}.model.media.Media;

@@ -85,7 +85,7 @@
 		<!-- This includes the class files from the web application so it can be leveraged in ingest. -->
 		<dependency>
 			<groupId>${groupId}</groupId>
-			<artifactId>${groupId}-web</artifactId>
+			<artifactId>${rootArtifactId}-web</artifactId>
 			<version>${project.version}</version>
 			<type>jar</type>
 			<classifier>classes</classifier>

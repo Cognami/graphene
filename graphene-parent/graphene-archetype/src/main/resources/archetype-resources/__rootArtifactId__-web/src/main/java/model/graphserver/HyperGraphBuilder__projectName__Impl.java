@@ -7,6 +7,7 @@ import graphene.dao.DocumentBuilder;
 import graphene.dao.G_Parser;
 import graphene.dao.GraphTraversalRuleService;
 import graphene.dao.es.JestModule;
+import graphene.model.graph.CreateOrUpdateEdgeRequest;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_CanonicalRelationshipType;
 import graphene.model.idl.G_Constraint;
@@ -87,42 +88,46 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 		setupNodeInheritance();
 	}
 
+	/**
+	 * final V_GenericNode a, final String relationType, final String relationValue,
+	 * final V_GenericNode attachTo, final double nodeCertainty, final double
+	 * minimumScoreRequired, final Map<String, V_GenericEdge> edgeList
+	 */
 	@Override
-	public V_GenericEdge createEdge(final V_GenericNode a, final String relationType, final String relationValue,
-			final V_GenericNode attachTo, final double nodeCertainty, final double minimumScoreRequired,
-			final Map<String, V_GenericEdge> edgeList) {
+	public V_GenericEdge createEdge(CreateOrUpdateEdgeRequest req) {
 		V_GenericEdge edge = null;
-		if (ValidationUtils.isValid(attachTo)) {
-			final String key = generateEdgeId(attachTo.getId(), relationType, a.getId());
+		if (ValidationUtils.isValid(req.getNodeB())) {
+			final String key = generateEdgeId(req.getNodeB().getId(), req.getRelationType(), req.getNodeA().getId());
 			if ((key != null) && !edgeList.containsKey(key)) {
-				edge = new V_GenericEdge(key, a, attachTo);
-				edge.setIdType(relationType);
+				edge = new V_GenericEdge(key, req.getNodeA(), req.getNodeB());
+				edge.setIdType(req.getRelationType());
 				edge.setLabel(null);
-				edge.setIdVal(relationType);
-				if (nodeCertainty < 100.0) {
-					edge.addData("Certainty", DataFormatConstants.formatPercent(nodeCertainty));
+				edge.setIdVal(req.getRelationType());
+				if (req.getNodeCertainty() < 100.0) {
+					edge.addData("Certainty", DataFormatConstants.formatPercent(req.getNodeCertainty()));
 					edge.setLineStyle("dotted");
 				}
 				// if this is a LIKE edge
-				if (relationType.equals(G_CanonicalRelationshipType.LIKES.name())) {
+				if (req.getRelationType().equals(G_CanonicalRelationshipType.LIKES.name())) {
 					edge.setColor("blue");
 					edge.setLabel("+1");
 
 					// if this is an OWNER_OF edge that is connected to
 					// a "MEDIA" node...
-				} else if (relationType.equals(G_CanonicalRelationshipType.OWNER_OF.name())
-						&& (attachTo.getIdType().equals(G_CanonicalPropertyType.MEDIA.name()) || a.getIdType().equals(
-								G_CanonicalPropertyType.MEDIA.name()))) {
+				} else if (req.getRelationType().equals(G_CanonicalRelationshipType.OWNER_OF.name())
+						&& (req.getNodeB().getIdType().equals(G_CanonicalPropertyType.MEDIA.name())
+								|| req.getNodeA().getIdType().equals(G_CanonicalPropertyType.MEDIA.name()))) {
 					edge.setColor("green");
 					edge.setCount(3);
 				}
-				edge.addData("Value", StringUtils.coalesc(" ", a.getLabel(), relationValue, attachTo.getLabel()));
+				edge.addData("Value", StringUtils.coalesc(" ", req.getNodeA().getLabel(), req.getRelationValue(),
+						req.getNodeB().getLabel()));
 				edgeList.put(key, edge);
 			}
 			// if this flag is set, we'll add the attributes to the
 			// attached node.
 			if (inheritAttributes) {
-				attachTo.inheritPropertiesOfExcept(a, skipInheritanceTypes);
+				req.getNodeB().inheritPropertiesOfExcept(req.getNodeA(), skipInheritanceTypes);
 			}
 		}
 		return edge;
@@ -158,21 +163,22 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 
 	@Override
 	public boolean execute(final G_SearchResult t, final G_EntityQuery q) {
-//		if (ValidationUtils.isValid(t.getResult())) {
-//			final G_Entity entity = (G_Entity) t.getResult();
-//			final String type = (String) PropertyHelper.getSingletonValue(entity.getProperties().get(
-//					G_Parser.REPORT_TYPE));
-//
-//			final G_Parser parser = db.getParserForObject(type);
-//			if (parser != null) {
-//				return parser.parse(t, q);
-//			} else {
-//				logger.warn("No parser was found for the supplied type, but carrying on.");
-//				return true;
-//			}
-//		} else {
-			return false;
-	//	}
+		// if (ValidationUtils.isValid(t.getResult())) {
+		// final G_Entity entity = (G_Entity) t.getResult();
+		// final String type = (String)
+		// PropertyHelper.getSingletonValue(entity.getProperties().get(
+		// G_Parser.REPORT_TYPE));
+		//
+		// final G_Parser parser = db.getParserForObject(type);
+		// if (parser != null) {
+		// return parser.parse(t, q);
+		// } else {
+		// logger.warn("No parser was found for the supplied type, but carrying on.");
+		// return true;
+		// }
+		// } else {
+		return false;
+		// }
 	}
 
 	@Override
@@ -182,6 +188,7 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 
 	@Override
 	public V_GenericGraph makeGraphResponse(final V_GraphQuery graphQuery) throws Exception {
+
 		nodeList = new HashMap<String, V_GenericNode>();
 		// edgeMap = new HashMap<String, V_GenericEdge>();
 		edgeList = new HashMap<String, V_GenericEdge>();
@@ -211,7 +218,7 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 		for (currentDegree = 0; (currentDegree < graphQuery.getMaxHops())
 				&& (nodeList.size() < graphQuery.getMaxNodes()); currentDegree++) {
 			G_EntityQuery eq = null;
-			logger.debug("${symbol_dollar}${symbol_dollar}${symbol_dollar}${symbol_dollar}There are " + queriesToRun.size() + " queries to run in the current degree.");
+			logger.debug("$$$$There are " + queriesToRun.size() + " queries to run in the current degree.");
 			while ((queriesToRun.size() > 0) && ((eq = queriesToRun.poll()) != null)
 					&& (nodeList.size() < graphQuery.getMaxNodes())) {
 
@@ -221,15 +228,15 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 					logger.debug("Processing degree " + currentDegree);
 
 					/**
-					 * This will end up building nodes and edges, and creating
-					 * new queries for the queue
+					 * This will end up building nodes and edges, and creating new queries for the
+					 * queue
 					 */
 					logger.debug("1111=====Running query " + eq.toString());
 					getDAO().performCallback(0, eq.getMaxResult(), this, eq);
 					logger.debug("3333====After running " + eq.toString() + ", there are "
 							+ queriesToRunNextDegree.size() + " queries to run in the next degree.");
 				}
-			}// end while loop
+			} // end while loop
 
 			// very important!!
 			// unscannedNodeList.clear();
@@ -305,8 +312,8 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 			final Map<String, V_GenericEdge> newEdgeList = new HashMap<String, V_GenericEdge>();
 
 			/*
-			 * First we iterate over all the edges. Each time we see a node as
-			 * either a source or target, we increment it's count.
+			 * First we iterate over all the edges. Each time we see a node as either a
+			 * source or target, we increment it's count.
 			 */
 			for (final V_GenericEdge e : vg.getEdges().values()) {
 				final String s = e.getSourceId();
@@ -326,11 +333,10 @@ public class HyperGraphBuilder${projectName}Impl extends AbstractGraphBuilder {
 			}
 
 			/**
-			 * Next we loop over the edges again and look at the counts for each
-			 * side.
+			 * Next we loop over the edges again and look at the counts for each side.
 			 * 
-			 * If the count is one and we don't want to keep the node type,
-			 * we'll skip adding it to the new list.
+			 * If the count is one and we don't want to keep the node type, we'll skip
+			 * adding it to the new list.
 			 * 
 			 */
 			for (final V_GenericEdge e : vg.getEdges().values()) {
