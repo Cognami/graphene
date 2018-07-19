@@ -7,45 +7,45 @@ Screenshots from an Instagram example:
 ![A graph of Instagram events](https://cloud.githubusercontent.com/assets/1234595/8172308/660742f0-138d-11e5-8dce-ddaa37c1c107.png)
 ======
  Graphene is a high performance Java based web framework you can use to build a searching and graphing application on top of your data.  By Graphing, we mean nodes and edges that describe either shared attributes or events/relations between actors.  (i.e. two people share the same address (a shared attribute), or a email between people (an event)) It is datastore agnostic, but has some built in support for Elastic Search, SQL Databases, and Titan.  *Graphene requires some coding to be done to adapt to your specific needs and data.  You get to decide what constitutes a node and edge in your data.*
- 
+
  **A popular use of Graphene is for discovering shared attributes in forensic analysis, for instance using a corpus of financial or case data.  Graphene has been applied to such domains as Anti-Money Laundering, Counter Threat Finance, social media, communication events and more.**  Leveraging [Apache Tika](https://tika.apache.org/), it has even been applied to collections of files.  Graphene lets you visualize the connections between entities that you wouldn't otherwise see.  Graphene also allows you to modify the network graph in your browser, and save those modifications back to the server.  Graphene has export functionality of graphs built in.
- 
+
  A plugin architecture based on [Apache Tapestry](http://tapestry.apache.org/) allows you to create additional capabilities that can be **autodiscovered** at deployment.  An example is our integration of a UI for communicating with an [MIT Lincoln Labs' MITIE Entity Extractor](https://github.com/mitll/MITIE) service, which allows you to paste in free text and get a list of clickable entities to drill down on.  This is part of our ongoing effort to support **Complex Queries** using DARPA XDATA innovations.
 
 For configurations, building, and deployment instructions, view the [Graphene Wiki](https://github.com/Sotera/graphene/wiki).
 Please see the road maps in the wiki for new features and their slated order.
- 
-Using Graphene 
+
+Using Graphene
 ------
  The core of the Graphene project contains multiple modules, some of which are optional.  The main module that you'll need it the graphene-web module, since it acts as a WAR overlay for your Java based web application.  The current example is [Graphene-Instagram](https://github.com/Sotera/graphene-instagram).  Previous demos included Enron, Scott Walker email data, and Kiva Microloan data.
 
  It's our goal that you use the available modules if they make sense for your needs, but we allow you to wire in your own code in most places.  In addition, Graphene leverages Apache Tapestry's auto discovery of modules, so we will be expanding the number of 'plugin' modules available.  Currently we offer the graphene-augment-mitie as an example of such a module.  It's abilities are made available in your app simply by including the jar file in your POM, no code changes necessary!
- 
-Building Graphene 
------- 
- Graphene is built using [Apache Maven](http://maven.apache.org) version 3.0.4 or later and a recent version of [currently Java 7](http://www.oracle.com/technetwork/java/javase/downloads/index.html). 
+
+Building Graphene
+------
+ Graphene is built using [Apache Maven](http://maven.apache.org) version 3.0.4 or later and a recent version of [currently Java 7](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
  Note that Java 7 must be used, and 8 will cause issues.  On a Mac, you might have to go through some extra steps to enable multiple Java versions.  Google 'jenv'.  Also you'll need to update your JAVA_HOME that maven will use during a terminal session:
  Install a Java 7 SDK dmg file, then:
  export JAVA_HOME=/Library/Java/JavaVirtualMachines/{your-jdk-1.7.-version}/Contents/Home
  [See here for details](http://stackoverflow.com/questions/18813828/why-maven-use-jdk-1-6-but-my-java-version-is-1-7)
- 
- 
+
+
  *Clone and ```mvn clean install``` the Vande project, which a small but required module outside of Graphene parent.  
- 
+
  * A plain 'mvn clean install' on graphene-parent will build all the jar files and a single war file (to be overlaid on your project)
  * Test execution is part of the build, but you can add -DskipTests=true to cut down on the build time.
  * A BuildAll.bat is supplied for windows users.  This will perform a few cleans to overcome some windows issues, and then compile and install to your local maven repo.
  * BuildAllOffline.bat will also grab the source code and javadocs for the dependencies, so you can take your .m2 directory into an offline enclave (or airgapped network) to develop.
- 
+
 Quickstart (4.2.0 and later)
 ------
  Once you've built the core modules (from graphene parent) you should be able to create a new project via a maven archetype.  If you've never used an archetype, basically it sets up the scaffolding for your new project based on a small amount of user input.  From there you can import it into your favorite IDE and modify it to your requirements.  In our case, we provide an archetype that is based on [Graphene-Instagram](https://github.com/Sotera/graphene-instagram).  This may mean you'll have to delete some of the classes we give you, but you'll have a better idea on how the project is intended to be structured.
 
  * Step 1: navigate to a directory you want to create the project in.  
- * Step 2: Assuming your project name is "Omni", enter a command like this: 
+ * Step 2: Assuming your project name is "Omni", enter a command like this:
 
     ```
-    mvn archetype:generate -DarchetypeGroupId=graphene -DarchetypeArtifactId=graphene-archetype -DarchetypeVersion=4.2.0-SNAPSHOT -DgroupId=graphene-omni -DartifactId=graphene-omni -Dpackage=graphene.omni -DprojectName=Omni
+    mvn archetype:generate -DarchetypeGroupId=graphene -DarchetypeArtifactId=graphene-archetype -DarchetypeVersion=4.3.0 -DgroupId=graphene-omni -DartifactId=graphene-omni -Dpackage=graphene.omni -DprojectName=Omni
 ```
  * Step 3: If you answer No to the confirmation prompt that follows, you'll have a chance to enter in extra information, such as the ElasticSearch settings, etc.
 
@@ -66,62 +66,62 @@ Graphene is structured as a multi module maven project. The modules are:
   <li> <h3>graphene-parent</h3>
     <ul>
       <li><h4>graphene-analytics</h4>
-        <ul> 
+        <ul>
           <li>Still under development.  This is for precomputed or post ingest analytics</li>
         </ul>
       </li>
      <li><h4>graphene-dao</h4>
-        <ul> 
+        <ul>
           <li>Defines all DAO interfaces used under graphene-parent, as well as any business logic interfaces and implementations</li>
         </ul>
      </li>
      <li><h4>graphene-dao-neo4j</h4>
-        <ul> 
+        <ul>
           <li>Defines some DAO implementations for a standardized Neo4J property graph, and graph querying abilities using Cypher and the Neo4J Java API</li>
         </ul>
      </li>
      <li><h4>graphene-dao-titan</h4>
-        <ul> 
+        <ul>
           <li>Defines some helper classes for working with the Titan graph database for property and event graphs, and graph querying abilities using the Tinkerpop/Gremlin APIs</li>
         </ul>
      </li>
      <li><h4>graphene-dao-sql</h4>
-        <ul> 
+        <ul>
           <li>Defines some DAO implementations for standardized SQL tables.  These are not used unless you wire them in IOC</li>
         </ul>
      </li>
       <li><h4>graphene-dao-es</h4>
-        <ul> 
+        <ul>
           <li>Defines some DAO implementations for working with Elastic Search with JEST.  Using JEST allows us to be compatible through the REST layer, instead of binding to a particular version of ElasticSearch.  These are not used unless you wire them in IOC</li>
         </ul>
      </li>
       <li><h4>graphene-export</h4>
-        <ul> 
+        <ul>
           <li>Defines utilities for converting internal lists into CSV and native Excel XLSX files</li>
         </ul>
       </li>
     <li><h4>graphene-hts</h4>
-        <ul> 
+        <ul>
           <li>Under development. Defines utilities for entity extraction and resolution based on the nature and context of the data. </li>
         </ul>
       </li>
       <li><h4>graphene-ingest</h4>
-        <ul> 
+        <ul>
           <li>Defines some basic ingest utilities which are used only by other ingest modules.</li>
         </ul>
       </li>
       <li><h4>graphene-introspect</h4>
-        <ul> 
+        <ul>
           <li>Used during the ingest phase.  Currently its main function is to run a series of queries against every table and every column, so you can get a feel for the bounds of your data and which columns are interesting.</li>
         </ul>
       </li>
       <li><h4>graphene-model</h4>
-        <ul> 
+        <ul>
           <li>This module contains IDL classes generated by  [Apache Avro](http://avro.apache.org/).  These classes are the lingua franca between modules in Graphene. </li>
         </ul>
       </li>
       <li><h4>graphene-rest</h4>
-        <ul> 
+        <ul>
           <li>This module defines the REST interfaces which will be exposed to the UI.</li>
 <li>Your REST implementations will adhere to the interfaces defined here.</li>
 <li>The REST interfaces control the paths of the resource, so the UI will not break because of bad paths.</li>
@@ -129,18 +129,18 @@ Graphene is structured as a multi module maven project. The modules are:
         </ul>
       </li>
       <li><h4>graphene-search</h4>
-        <ul> 
+        <ul>
           <li>General search utilities</li>
         </ul>
       </li>
       <li><h4>graphene-util</h4>
-        <ul> 
+        <ul>
           <li>Utilities which have cross cutting concerns for all modules.  For example, query timing, logging, memory and file utilities.</li>
 <li>Almost all modules require this module as a dependency.</li>
         </ul>
       </li>
       <li><h4>graphene-web</h4>
-        <ul> 
+        <ul>
           <li>This module defines some basic wiring and imports many other of the *Module.java classes from other graphene maven modules.</li>
 <li>The web module also contains shared html, css and js resources used by ExtJs, [Cytoscape.js](http://js.cytoscape.org/) and many other js libraries.</li>
 <li>It also contains Apache Tapestry based UI components and pages (currently limited)</li>
@@ -150,47 +150,46 @@ Graphene is structured as a multi module maven project. The modules are:
   </li>
 </ul>
 
- 
+
  Developing with Graphene
 ------
 
 
  We recommend that your application use the Maven module structure, as shown in the Walker and Kiva demos.  For example, if you have a company name or dataset name you are developing for, like IMDB, the structure would look as follows:
- 
+
  * graphene-imdb
  ..*graphene-imdb-ingest (aka the ingest module)
  ..*graphene-imdb-web (aka the web module)
- 
+
 The POM.xml at the IMDB level lists the Ingest and Web modules as children, so you can build both parts together.
- 
+
 We recommend that the ingest module depend on parts from the web module (and not the other way around), so that code relating to ingest doesn't get deployed with your war.
- 
+
 ###The ingest module
  The ingest module has to do with ETL (Extract, Transform, Load) of your data into a more generic format.
- 
+
 ###The web module
 #### If you ETL'd into an RDBMS  
-   The first thing you might want to do with the web module is to setup and run the DTOGeneration.java main(). Once it connects to your database, it will generate Java model objects that reflect your database tables, and query helping objects which will ensure you write valid SQL (invalid SQL or bad type conversions will be caught during compilation).  This portion of the process uses QueryDSL to do code generation, which is normally tedious and error prone when done by hand.
+   The first thing you might want to do with the dao-sql module is to setup and run the DTOGeneration.java main(). Once it connects to your database, it will generate Java model objects that reflect your database tables, and query helping objects which will ensure you write valid SQL (invalid SQL or bad type conversions will be caught during compilation).  This portion of the process uses QueryDSL to do code generation, which is normally tedious and error prone when done by hand.
 #### If you didn't ETL into an RDBMS
    You can skip the DTOGeneration, and go straight to implementing your DAOs
- 
+
 #### DAO Implementation
    Graphene expects you to create implementations for most of the DAOs following the interfaces provided in the graphene-dao module.
-   This allows the storage mechanism you choose to be independent of the main services and UI.  In the DAO implementations, you will mostly be querying your datastore and then converting the results into one of the model or view objects in the graphene-model module. 
- 
-  
+   This allows the storage mechanism you choose to be independent of the main services and UI.  In the DAO implementations, you will mostly be querying your datastore and then converting the results into one of the model or view objects in the graphene-model module.
+
+
 Running a Graphene application
 ------
 
-   By default, Graphene expects some other software to be available (Although it is easy to change this or override the defaults) 
+   By default, Graphene expects some other software to be available (Although it is easy to change this or override the defaults)
 
 * JDK 1.7 (latest will be fine).  Graphene and its dependencies are not built with JDK 8 compatibility.
 * Tomcat 7 or 8, with any JDBC on the class path (i.e. tomcat/lib or packaged with your app)
 * You should set the Catalina_Home environment variable
-* Graphene supports Chrome and Firefox, and does not require any browser plugins. 
- 
- 
+* Graphene supports Chrome and Firefox, and does not require any browser plugins.
+
+
 Licensing
 ------
    Graphene is licensed with Apache License Version 2.0 (APLv2).  This project was funded by DARPA under part of the XDATA program.
- 
