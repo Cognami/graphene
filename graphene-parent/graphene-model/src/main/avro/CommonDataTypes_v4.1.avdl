@@ -40,6 +40,7 @@ protocol G_CommonDataTypes {
 	ADDRESS_STATE_PROVINCE,	//(26, "Address State or Province","addressStateProvince"),
 	ADDRESS_COUNTRY,		//(27, "Address Country", "addressCountry"),
 	ADDRESS_OTHER,			//(29, "Address Other", "addressOther"),
+	ADDRESS_REGION,
 	GEO,					//(21, "Geolocation", "geo"),
 	EXPORTADDRESS,			//(23, "Export Address", "export"),
 	IMPORTADDRESS,			//(24, "Import Address", "import"),
@@ -56,6 +57,9 @@ protocol G_CommonDataTypes {
 	DESCRIPTION,			//(408, "Description", "description"),
 	EMAIL_ADDRESS,			//(4, "Email Address", "emailAddress"),
 	IP,						//(41, "IP", "ip"),
+	MAC_ADDRESS,				//Machines physical ID
+	CIDR,					//Network partition description
+	TABLE_NAME, 				// a Database table
 	DEVICE_ID,				//
 	SERIAL_NUMBER,			//
 	FAMILYROLE,				//(409, "Family Role", "familyRole"),
@@ -108,6 +112,8 @@ protocol G_CommonDataTypes {
 	INSTITUTION,  //Some kind of institution
 	FILER,  //One who files
 	EVENT, //Some activity or event
+	ROLE, //the function assumed or part played by a person or thing in a particular situation.
+	UNIQUE_RESOURCE_NAME, //when you need to specify a resource unambiguously across all services of a provider
 	REDACTED				//(-1, "[REDACTED]", "REDACTED");
 	
 	}

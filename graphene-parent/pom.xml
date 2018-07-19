@@ -40,7 +40,7 @@
 
 		<!-- properties for dependencies for web frameworks -->
 
-		<tapestry-release-version>5.3.8</tapestry-release-version>
+		<tapestry-release-version>5.4.3</tapestry-release-version>
 		<tynamo-version>0.5.0</tynamo-version>
 
 		<!-- properties for dependencies involving databases -->
@@ -50,7 +50,7 @@
 
 		<!-- properties for dependencies that are utilities -->
 		<vande.version>4.3.0</vande.version>
-		<jackson2.version>2.2.1	</jackson2.version>
+		<jackson2.version>2.5.4	</jackson2.version>
 		<!-- <jackson2.version>2.3.0</jackson2.version> 2.3.0 does not work with 
 			resteasy 3.0.5.Final or 3.0.6.Final. -->
 		<joda-time.version>2.3</joda-time.version>

@@ -263,16 +263,26 @@ public class PropertyHelper extends G_Property {
 	}
 
 	public PropertyHelper(final String key, final String friendlyText, final G_PropertyType type,
-			final List<Object> value, final G_PropertyTag tag) {
+			final List<Object> list, final G_PropertyTag tag) {
 		setKey(key);
 		setFriendlyText(friendlyText);
 		setProvenance(null);
 		setUncertainty(null);
 		setTags(new ArrayList<G_PropertyTag>(2));
-		setListRange(new ListRangeHelper(value, type));
+		setListRange(new ListRangeHelper(list, type));
 		getTags().add(tag);
 	}
-
+	public PropertyHelper(final String key, final String friendlyText, final G_PropertyType type,
+			final Object list, final G_PropertyTag tag) {
+		setKey(key);
+		setFriendlyText(friendlyText);
+		setProvenance(null);
+		setUncertainty(null);
+		setTags(new ArrayList<G_PropertyTag>(2));
+		setListRange(new ListRangeHelper(list, type));
+		getTags().add(tag);
+	}
+	
 	/**
 	 * 
 	 * @param key

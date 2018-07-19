@@ -1,14 +1,12 @@
 package graphene.rest.ws.impl;
 
-import graphene.rest.ws.ExportGraphRS;
-import graphene.util.validator.ValidationUtils;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.QueryParam;
@@ -21,6 +19,9 @@ import org.apache.tapestry5.ioc.annotations.PostInjection;
 import org.apache.tapestry5.services.ApplicationGlobals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import graphene.rest.ws.ExportGraphRS;
+import graphene.util.validator.ValidationUtils;
 
 // History
 // 09/02/13     A. Weller - Initial version
@@ -179,7 +180,7 @@ public class ExportGraphRSImpl implements ExportGraphRS {
 		String fileContents = null;
 		try {
 			inStream = new FileInputStream(filePath);
-			fileContents = IOUtils.toString(inStream);
+			fileContents = IOUtils.toString(inStream, Charset.defaultCharset());
 			inStream.close();
 			// delete the file
 			final File f = new File(filePath);

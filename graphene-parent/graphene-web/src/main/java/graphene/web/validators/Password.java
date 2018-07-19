@@ -12,11 +12,11 @@ public class Password extends AbstractValidator<Void, String> {
 	private String validation;
 
 	public Password() {
-		super(null, String.class, "validate-password");
+		super(null, String.class, "validate-password", null);
 	}
 
 	public Password(final String validation, final String validationMessage) {
-		super(null, String.class, "validate-password");
+		super(null, String.class, "validate-password", null);
 		this.validation = validation;
 		this.validationMessage = validationMessage;
 	}

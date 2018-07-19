@@ -2,7 +2,11 @@ package graphene.model;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsonschema2pojo.SchemaMapper;
 
 import com.sun.codemodel.JCodeModel;
@@ -33,24 +37,40 @@ public class GenerateModel {
 		this.overwrite = overwrite;
 	}
 
-	public void buildModel(final String source, final String className,
-			final String packageName, final String outputDirectory)
-			throws Exception {
+	public ArrayList<JSONObject> trimES(String jsonSchema, String rootElement) {
+		ArrayList<JSONObject> retval = new ArrayList<>();
+		try {
+			JSONObject object = new JSONObject(jsonSchema);
+			Iterator<?> iter = object.keys();
+			while (iter.hasNext()) {
+				String key = (String) iter.next();
+				System.out.println(key);
+				JSONObject levelOne = object.getJSONObject(key);
+				System.out.println(levelOne);
+				JSONObject levelTwo = levelOne.getJSONObject("mappings").getJSONObject(rootElement);
+				levelTwo.put("type", "object");
+				retval.add(levelTwo);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return retval;
+
+	}
+
+	public void buildModel(final String source, final String className, final String packageName,
+			final String outputDirectory) throws Exception {
 		final JCodeModel codeModel = new JCodeModel();
 
-		System.out.println("Attempting to build POJOs for type " + className
-				+ " from source string");
+		System.out.println("Attempting to build POJOs for type " + className + " from source string");
 		new SchemaMapper().generate(codeModel, className, packageName, source);
 		final File f = new File(outputDirectory);
 		if (f.isDirectory()) {
-			final File existingFile = new File(getExistingFileURL(
-					f.getAbsolutePath(), packageName, className));
+			final File existingFile = new File(getExistingFileURL(f.getAbsolutePath(), packageName, className));
 			if (!overwrite && existingFile.exists()) {
-				System.out.println("Skipping " + existingFile.getAbsolutePath()
-						+ " because it already exists.");
+				System.out.println("Skipping " + existingFile.getAbsolutePath() + " because it already exists.");
 			} else {
-				System.out.println("No existing file found at "
-						+ existingFile.getAbsolutePath());
+				System.out.println("No existing file found at " + existingFile.getAbsolutePath());
 				System.out.println("Building model at " + f.getAbsolutePath());
 				codeModel.build(f);
 			}
@@ -60,24 +80,19 @@ public class GenerateModel {
 		}
 	}
 
-	public void buildModel(final URL source, final String className,
-			final String packageName, final String outputDirectory)
-			throws Exception {
+	public void buildModel(final URL source, final String className, final String packageName,
+			final String outputDirectory) throws Exception {
 		final JCodeModel codeModel = new JCodeModel();
-		System.out.println("Attempting to build POJOs for type " + className
-				+ " from source " + source.getPath());
+		System.out.println("Attempting to build POJOs for type " + className + " from source " + source.getPath());
 
 		new SchemaMapper().generate(codeModel, className, packageName, source);
 		final File f = new File(outputDirectory);
 		if (f.isDirectory()) {
-			final File existingFile = new File(getExistingFileURL(
-					f.getAbsolutePath(), packageName, className));
+			final File existingFile = new File(getExistingFileURL(f.getAbsolutePath(), packageName, className));
 			if (existingFile.exists()) {
-				System.out.println("Skipping " + existingFile.getAbsolutePath()
-						+ " because it already exists.");
+				System.out.println("Skipping " + existingFile.getAbsolutePath() + " because it already exists.");
 			} else {
-				System.out.println("No existing file found at "
-						+ existingFile.getAbsolutePath());
+				System.out.println("No existing file found at " + existingFile.getAbsolutePath());
 				System.out.println("Building model at " + f.getAbsolutePath());
 				codeModel.build(f);
 			}
@@ -88,13 +103,10 @@ public class GenerateModel {
 
 	}
 
-	private String getExistingFileURL(final String outputDirectory,
-			final String packageName, final String className) {
-		final String packagePath = packageName.replaceAll("[.]", "//");
-		final String existingFile = outputDirectory + "//" + packagePath + "//"
-				+ className + ".java";
-		System.out
-				.println("Potentially existing file would be " + existingFile);
+	private String getExistingFileURL(final String outputDirectory, final String packageName, final String className) {
+		final String packagePath = packageName.replaceAll("[.]", "/");
+		final String existingFile = outputDirectory + "/" + packagePath + "/" + className + ".java";
+		System.out.println("Potentially existing file would be " + existingFile);
 		return existingFile;
 	}
 }

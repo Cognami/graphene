@@ -3,6 +3,7 @@
  */
 package graphene.web.services.javascript;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.apache.tapestry5.func.F;
 import org.apache.tapestry5.func.Mapper;
 import org.apache.tapestry5.ioc.annotations.Symbol;
 import org.apache.tapestry5.services.AssetSource;
+import org.apache.tapestry5.services.javascript.JavaScriptAggregationStrategy;
 import org.apache.tapestry5.services.javascript.JavaScriptStack;
 import org.apache.tapestry5.services.javascript.StylesheetLink;
 import org.got5.tapestry5.jquery.JQuerySymbolConstants;
@@ -22,8 +24,9 @@ import org.got5.tapestry5.jquery.JQuerySymbolConstants;
 public class NeoCytoscapeStack implements JavaScriptStack {
 	public static final String STACK_ID = "NeoCytoscapeStack";
 
-	public NeoCytoscapeStack(
-			@Symbol(JQuerySymbolConstants.USE_MINIFIED_JS) final boolean minified,
+	private final List<String> modules;
+
+	public NeoCytoscapeStack(@Symbol(JQuerySymbolConstants.USE_MINIFIED_JS) final boolean minified,
 			final AssetSource assetSource) {
 
 		final Mapper<String, Asset> pathToAsset = new Mapper<String, Asset>() {
@@ -32,16 +35,20 @@ public class NeoCytoscapeStack implements JavaScriptStack {
 			}
 		};
 
-		final String path = String.format(
-				"context:core/js/libs/cytoscape-2.2.12/cytoscape%s.js", minified ? ".min"
-						: "");
+		final String path = String.format("context:core/js/libs/cytoscape-2.2.12/cytoscape%s.js",
+				minified ? ".min" : "");
 
 		javaScriptStack = F
-				.flow(path, "context:core/js/neo_cytoscape/script.js",
-						"context:core/js/neo_cytoscape/load.js"
+				.flow(path, "context:core/js/neo_cytoscape/script.js", "context:core/js/neo_cytoscape/load.js"
 
 				).map(pathToAsset).toList();
 		cssStack = Collections.emptyList();
+		modules = new ArrayList<String>();
+
+		/**
+		 * Project modules
+		 */
+		modules.add("NeoCytoscapeStack");
 	}
 
 	private final List<Asset> javaScriptStack;
@@ -49,23 +56,28 @@ public class NeoCytoscapeStack implements JavaScriptStack {
 	private final List<StylesheetLink> cssStack;
 
 	public String getInitialization() {
-
-		return null;
+		return "";
 	}
 
 	public List<Asset> getJavaScriptLibraries() {
-
 		return javaScriptStack;
 	}
 
 	public List<StylesheetLink> getStylesheets() {
-
 		return cssStack;
 	}
 
 	public List<String> getStacks() {
-
 		return Collections.emptyList();
 	}
 
+	@Override
+	public JavaScriptAggregationStrategy getJavaScriptAggregationStrategy() {
+		return JavaScriptAggregationStrategy.COMBINE_AND_MINIMIZE;
+	}
+
+	@Override
+	public List<String> getModules() {
+		return modules;
+	}
 }

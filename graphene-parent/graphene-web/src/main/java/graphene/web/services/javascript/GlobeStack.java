@@ -1,5 +1,6 @@
 package graphene.web.services.javascript;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import org.apache.tapestry5.Asset;
 import org.apache.tapestry5.func.F;
 import org.apache.tapestry5.func.Mapper;
 import org.apache.tapestry5.services.AssetSource;
+import org.apache.tapestry5.services.javascript.JavaScriptAggregationStrategy;
 import org.apache.tapestry5.services.javascript.JavaScriptStack;
 import org.apache.tapestry5.services.javascript.StylesheetLink;
 import org.got5.tapestry5.jquery.utils.JQueryUtils;
@@ -17,6 +19,8 @@ public class GlobeStack implements JavaScriptStack {
 	private final List<Asset> javaScriptStack;
 
 	private final List<StylesheetLink> cssStack;
+
+	private final List<String> modules;
 
 	public GlobeStack(final AssetSource assetSource) {
 		final Mapper<String, Asset> pathToAsset = new Mapper<String, Asset>() {
@@ -86,26 +90,39 @@ public class GlobeStack implements JavaScriptStack {
 				pathToAsset, JQueryUtils.assetToStylesheetLink);
 		cssStack = F.flow("context:globe/style.css").map(pathToStylesheetLink)
 				.toList();
+		
+		modules = new ArrayList<String>();
+
+		/**
+		 * Project modules
+		 */
+		modules.add("GlobeStack");
 	}
 
-	@Override
-	public List<String> getStacks() {
-		return Collections.emptyList();
+	public String getInitialization() {
+		return "";
 	}
 
-	@Override
 	public List<Asset> getJavaScriptLibraries() {
 		return javaScriptStack;
 	}
 
-	@Override
 	public List<StylesheetLink> getStylesheets() {
 		return cssStack;
 	}
 
+	public List<String> getStacks() {
+		return Collections.emptyList();
+	}
+
+	 @Override
+	   public JavaScriptAggregationStrategy getJavaScriptAggregationStrategy() {
+	      return JavaScriptAggregationStrategy.COMBINE_AND_MINIMIZE;
+	   }
+
 	@Override
-	public String getInitialization() {
-		return null;
+	public List<String> getModules() {
+		return modules;
 	}
 
 }
